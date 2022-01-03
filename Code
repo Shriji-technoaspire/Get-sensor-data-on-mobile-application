@@ -1,0 +1,61 @@
+#define BLYNK_PRINT Serial
+#include <ESP8266_Lib.h>
+#include <BlynkSimpleShieldEsp8266.h>
+#include <SimpleDHT.h>
+
+char auth[] = "Paste Your Authorization Code Here";
+
+char ssid[] = "Paste your WiFi Name Here";
+char pass[] = "Paste Your WiFi Password Here";
+
+// Your ESP8266 baud rate:
+#define ESP8266_BAUD 9600
+ESP8266 wifi(&Serial);
+
+const int pinDHT11 = 13; // GPIO2 on your ESP8266 Wifi Module
+SimpleDHT11 dht11;
+
+void setup()
+{
+  Serial.begin(ESP8266_BAUD);
+  delay(10);
+  //Set ESP8266 baud rate
+  // EspSerial.begin(ESP8266_BAUD);
+  delay(10);
+  Blynk.begin(auth, wifi, ssid, pass);
+}
+
+void sendSensor()
+{
+  // start working...
+  Serial.println("=================================");
+  Serial.println("Sample DHT11...");
+
+  // read without samples.
+  byte temperature = 0;
+  byte humidity = 0;
+  int err = SimpleDHTErrSuccess;
+  if ((err = dht11.read(pinDHT11, &temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {
+    Serial.print("Read DHT11 failed, err="); Serial.println(err); delay(1000);
+    return;
+  }
+  // for debug purposes.
+  Serial.print("Sample OK: ");
+  Serial.print((int)temperature); Serial.print(" *C, ");
+  Serial.print((int)humidity); Serial.println(" H");
+  // DHT11 sampling rate is 1HZ.
+  delay(1000);
+  Blynk.virtualWrite(V6, temperature);
+  Blynk.virtualWrite(V5, humidity);
+}
+
+void loop()
+{
+  sendSensor();
+  Blynk.run();
+}
+
+
+
+
+
